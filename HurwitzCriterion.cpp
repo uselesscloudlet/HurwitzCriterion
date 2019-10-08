@@ -13,9 +13,6 @@ int main()
 	int aIndAmount = 0;
 	double det = 1;
 
-	cout << "The matrix should look like:" << endl;
-	cout << "3 7 0" << endl << "1 5 0" << endl << "0 3 7" << endl;
-
 	cout << ">> Enter the number of monomials: " << endl;
 	cin >> aIndAmount;
 
@@ -35,11 +32,11 @@ int main()
 		}
 		else
 		{
-			cout << "System is unstable!" << endl;
+			cout << ">> System is unstable!" << endl;
 			return 0;
 		}
 	}
-	cout << "System is stable!" << endl;
+	cout << ">> System is stable!" << endl;
 	return 0;
 }
 
@@ -55,16 +52,58 @@ void enterIndArr(int aIndAmount, vector <double>& indexArr)
 
 void createIndMatrix(int aIndAmount, vector <double>& indexArr, vector <vector <double>>& hurwitzMatrix)
 {
-	for (int i = 0; i < aIndAmount - 1; i++)
+	vector <double> evenInd(aIndAmount - 1);
+	vector <double> oddInd(aIndAmount - 1);
+	vector <vector <double>> tempMatrix = hurwitzMatrix;
+
+	int biasCoef = 0;
+	int evenI = 0;
+	int oddI = 0;
+	int matrixResize = (aIndAmount - 1) * 2;
+
+	for (int i = 0; i < aIndAmount; i++)
 	{
-		for (int j = 0; j < aIndAmount - 1; j++)
+		if (i % 2 == 0)
 		{
-			if (i == j)
+			evenInd[evenI] = indexArr[i];
+			evenI++;
+		}
+		else
+		{
+			oddInd[oddI] = indexArr[i];
+			oddI++;
+		}
+	}
+
+	hurwitzMatrix.resize((matrixResize), vector<double>(matrixResize));
+	for (int i = 0; i < matrixResize; i++)
+	{
+		hurwitzMatrix[i].resize(matrixResize);
+	}
+
+	for (int i = 0; i < matrixResize / 2; i++)
+	{
+		for (int j = 0; j < matrixResize / 2; j++)
+		{
+			if (i % 2 == 0)
 			{
-				hurwitzMatrix[i][j] = indexArr[i];
+				hurwitzMatrix[i][j + biasCoef] = oddInd[j];
+			}
+			else
+			{
+				hurwitzMatrix[i][j + biasCoef] = evenInd[j];
 			}
 		}
-		// Нужна математика для остальных элементов :(
+		if (i % 2 != 0)
+		{
+			biasCoef++;
+		}
+	}
+
+	hurwitzMatrix.resize((matrixResize / 2), vector<double>(matrixResize / 2));
+	for (int i = 0; i < matrixResize / 2; i++)
+	{
+		hurwitzMatrix[i].resize(matrixResize / 2);
 	}
 }
 
@@ -82,9 +121,9 @@ double detCalc(int aIndAmount, vector <vector <double>>& hurwitzMatrix)
 	{
 		det = tempMatrix[0][0] * tempMatrix[1][1] - tempMatrix[1][0] * tempMatrix[0][1];
 	}
-	else if (aIndAmount - 1 < 0)
+	else if (aIndAmount - 1 < 1)
 	{
-		cout << "Unable to calculate ф matrix less than zero!" << endl;
+		cout << "Unable to calculate matrix less than zero!" << endl;
 		return 0;
 	}
 	else
@@ -93,6 +132,7 @@ double detCalc(int aIndAmount, vector <vector <double>>& hurwitzMatrix)
 		{
 			getMatrix(aIndAmount - 1, hurwitzMatrix, tempMatrix, i, 0);
 			det = det + coef * hurwitzMatrix[i][0] * detCalc(aIndAmount - 1, tempMatrix);
+			coef = -coef;
 		}
 	}
 	return det;
